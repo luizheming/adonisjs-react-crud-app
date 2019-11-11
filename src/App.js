@@ -1,14 +1,49 @@
-import React from 'react';
+import React, { Component } from 'react'
+import axios from 'axios'
 
+const api = axios.create({
+  baseURL: 'http://localhost:3333'
+})
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>React APP</h1>
-      </header>
-    </div>
-  );
+class App extends Component {
+  state = {
+    newPostContent: '',
+    posts: [],
+  }
+
+  async componentDidMount() {
+    const { data: posts } = await api.get('/posts')
+    this.setState({ posts })
+  }
+
+  handleOnSave = async (e) => {
+    e.preventDefault()
+    
+    const { data: post } = await api.post('/posts', { content: this.state.newPostContent })
+
+    this.setState({ posts: [...this.state.posts, post], newPostContent: '' })
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <form onSubmit={this.handleOnSave}>
+          <textarea
+            onChange={e => this.setState({ newPostContent: e.target.value })}
+            value={this.state.newPostContent}>
+          </textarea>
+
+          <button type="submit">Postar</button>
+        </form>
+
+        <ul>
+          {this.state.posts.map(post => (
+            <li key={post.id}>{post.content}</li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
 }
 
-export default App;
+export default App
